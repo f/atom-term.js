@@ -2529,6 +2529,7 @@ Terminal.prototype.keyDown = function(ev) {
         this.clear();
         return cancel(ev);
       }
+      break;
     // F1
     case 112:
       key = '\x1bOP';
