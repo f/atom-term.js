@@ -1119,11 +1119,16 @@ Terminal.prototype.bindMouse = function() {
   on(el, wheelEvent, function(ev) {
     if (self.mouseEvents) return;
     if (self.applicationKeypad) return;
+    var delta, direction;
     if (ev.type === 'DOMMouseScroll') {
-      self.scrollDisp(ev.detail < 0 ? -5 : 5);
+      delta = Math.abs(ev.detail);
+      direction = ev.detail < 0 ? -1 : 1;
     } else {
-      self.scrollDisp(ev.wheelDeltaY > 0 ? -5 : 5);
+      delta = Math.abs(ev.wheelDeltaY);
+      direction = ev.wheelDeltaY > 0 ? -1 : 1;
     }
+    self.scrollDisp(Math.ceil(delta * 0.1) * direction);
+    
     return cancel(ev);
   });
 };
