@@ -184,6 +184,7 @@ function Terminal(options) {
   this.rows = options.rows || options.geometry[1];
 
   if (options.handler) {
+    this.off('data', options.handler);
     this.on('data', options.handler);
   }
 
@@ -1081,7 +1082,14 @@ Terminal.prototype.bindMouse = function() {
     // fix for odd bug
     //if (self.vt200Mouse && !self.normalMouse) {
     if (self.vt200Mouse) {
-      sendButton({ __proto__: ev, type: 'mouseup' });
+      var syntheticEvent = {};
+
+      for (var key in event) {
+        syntheticEvent[key] = event[key]
+      }
+
+      syntheticEvent.type = 'mouseup';
+      sendButton(syntheticEvent);
       return cancel(ev);
     }
 
@@ -1118,7 +1126,6 @@ Terminal.prototype.bindMouse = function() {
   // the shell for example
   on(el, wheelEvent, function(ev) {
     if (self.mouseEvents) return;
-    if (self.applicationKeypad) return;
     if (ev.type === 'DOMMouseScroll') {
       self.scrollDisp(ev.detail < 0 ? -5 : 5);
     } else {
@@ -2523,12 +2530,6 @@ Terminal.prototype.keyDown = function(ev) {
         key = '\x1b[6~';
       }
       break;
-    // CTRL-K
-    case 75:
-      if ((!isMac && ev.ctrlKey) || (isMac && ev.metaKey)) {
-        this.clear();
-        return cancel(ev);
-      }
     // F1
     case 112:
       key = '\x1bOP';
@@ -2577,6 +2578,13 @@ Terminal.prototype.keyDown = function(ev) {
     case 123:
       key = '\x1b[24~';
       break;
+    // CTRL-K
+    case 75:
+      if ((!this.isMac && ev.ctrlKey) || (this.isMac && ev.metaKey)) {
+        this.clear();
+        return cancel(ev);
+      }
+      // Falls through so that the letter K is handled as expected
     default:
       // a-z and space
       if (ev.ctrlKey) {
